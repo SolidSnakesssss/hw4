@@ -9,7 +9,7 @@ all: bst-test equal-paths-test personal-test
 bst-test: bst-test.cpp bst.h avlbst.h
 	$(CXX) $(CXXFLAGS) $(DEFS) $< -o $@
 
-personal-test: personal-test.cpp bst.h
+personal-test: personal-test.cpp bst.h avlbst.h
 	$(CXX) $(CXXFLAGS) $(DEFS) $< -o $@
 
 # Brute force recompile all files each time

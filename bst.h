@@ -249,7 +249,9 @@ protected:
     // Add helper functions here
     int checkBalanced(Node<Key, Value>* node) const;
     static Node<Key, Value>* successor(Node<Key, Value>* current);
-		void transplant(Node<Key, Value>* u, Node<Key, Value>* v);
+		virtual void transplant(Node<Key, Value>* u, Node<Key, Value>* v);
+
+		void totalDeletion(Node<Key, Value>* node);
 
 
 protected:
@@ -464,7 +466,9 @@ void BinarySearchTree<Key, Value>::insert(const std::pair<const Key, Value> &key
 
     if (keyValuePair.first < parent->getKey()) {
       parent->setLeft(new Node<Key, Value>(keyValuePair.first, keyValuePair.second, parent));
-    } else {
+    } 
+		
+		else {
       parent->setRight(new Node<Key, Value>(keyValuePair.first, keyValuePair.second, parent));
     }
 }
@@ -476,6 +480,7 @@ void BinarySearchTree<Key, Value>::insert(const std::pair<const Key, Value> &key
 */
 template<typename Key, typename Value>
 void BinarySearchTree<Key, Value>::remove(const Key& key) {
+		//TODO
     Node<Key, Value>* targetNode = internalFind(key);
 
     if (targetNode == nullptr) return;
@@ -489,7 +494,7 @@ void BinarySearchTree<Key, Value>::remove(const Key& key) {
     else if (targetNode->getRight() == nullptr) {
         Node<Key, Value>* child = targetNode->getLeft();
         transplant(targetNode, child);
-    } 
+    }
     // If the target node has both left and right children
     else {
         // Find the predecessor node
@@ -591,12 +596,24 @@ template<typename Key, typename Value>
 void BinarySearchTree<Key, Value>::clear()
 {
 	// TODO
-	while(root_ != nullptr){
-		remove(root_->getKey());
-	}
+	totalDeletion(root_);
+
+    root_ = nullptr;
 }
 
+template<typename Key, typename Value>
+void BinarySearchTree<Key, Value>::totalDeletion(Node<Key, Value>* node){
+	if(node == nullptr){
+		return;
+	}
 
+	totalDeletion(node->getLeft());
+	totalDeletion(node->getRight());
+
+	delete node;
+
+	return;
+}
 
 /**
 * A helper function to find the smallest node in the tree.
