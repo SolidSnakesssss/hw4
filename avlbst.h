@@ -141,6 +141,9 @@ protected:
 		void rotateLeft(AVLNode<Key, Value>* x);
 		void insertFix(AVLNode<Key, Value>* n, AVLNode<Key, Value>* p);
 		void removeFix(AVLNode<Key, Value>* n, int8_t diff);
+
+		void updateBalanceAndRotate(AVLNode<Key, Value>* node);
+		int8_t getHeight(AVLNode<Key, Value>* node) const;
 };
 
 /*
@@ -150,67 +153,84 @@ protected:
 template<class Key, class Value>
 void AVLTree<Key, Value>::insert(const std::pair<const Key, Value> &new_item)
 {
-		//TODO
-		//std::cout << new_item.first << ", " << std::endl;
+    if (this->root_ == nullptr) {
+        // If the tree is empty, create a new root node
+        this->root_ = new AVLNode<Key,Value>(new_item.first, new_item.second, nullptr);
+        return;
+    }
 
-		if(this->root_ == nullptr){
-			this->root_ = new AVLNode<Key,Value>(new_item.first, new_item.second, nullptr);
+    AVLNode<Key, Value>* current = static_cast<AVLNode<Key, Value>*>(this->root_);
+    AVLNode<Key, Value>* parent = nullptr;
 
-			AVLNode<Key, Value>* temp = static_cast<AVLNode<Key, Value>*>(this->root_);
-			temp->setBalance(0);
+    // Traverse the tree to find the insertion point
+    while (current != nullptr) {
+        parent = current;
 
-			return;
-		}
+        if (new_item.first < current->getKey()) {
+            current = current->getLeft();
+        } else if (new_item.first > current->getKey()) {
+            current = current->getRight();
+        } else {
+            // If the key already exists, update the value and return
+            current->setValue(new_item.second);
+            return;
+        }
+    }
 
-		else{
-			AVLNode<Key, Value>* current = static_cast<AVLNode<Key, Value>*>(this->root_);
-			AVLNode<Key, Value>* parent = nullptr;
+    // Create a new node with the given key and value
+    AVLNode<Key, Value>* new_node = new AVLNode<Key, Value>(new_item.first, new_item.second, parent);
 
-			while(current != nullptr){
-				parent = current;
-				
-				if(new_item.first < current->getKey()){
-					current = current->getLeft();
-				}
+    // Attach the new node to the correct side of the parent
+    if (new_item.first < parent->getKey()) {
+        parent->setLeft(new_node);
+    } else {
+        parent->setRight(new_node);
+    }
 
-				else if(new_item.first > current->getKey()){
-					current = current->getRight();
-				}
+    // Update balance factors and perform rotations if necessary
+    updateBalanceAndRotate(parent);
+}
 
-				else{
-					current->setValue(new_item.second);
-					return;
-				}
-			}
+template<class Key, class Value>
+void AVLTree<Key, Value>::updateBalanceAndRotate(AVLNode<Key, Value>* node)
+{
+    while (node != nullptr) {
+        // Update balance factor of the current node
+        int8_t left_height = getHeight(node->getLeft());
+        int8_t right_height = getHeight(node->getRight());
+        int8_t balance_factor = right_height - left_height;
+        node->setBalance(balance_factor);
 
-			AVLNode<Key, Value>* newChild = new AVLNode<Key, Value>(new_item.first, new_item.second, parent);
-			newChild->setBalance(0);
+        // Perform rotations if necessary
+        if (balance_factor < -1) {
+            if (getHeight(node->getLeft()->getRight()) > getHeight(node->getLeft()->getLeft())) {
+                // Left-Right case
+                rotateLeft(node->getLeft());
+            }
+            // Left-Left case
+            rotateRight(node);
+        } else if (balance_factor > 1) {
+            if (getHeight(node->getRight()->getLeft()) > getHeight(node->getRight()->getRight())) {
+                // Right-Left case
+                rotateRight(node->getRight());
+            }
+            // Right-Right case
+            rotateLeft(node);
+        }
 
-			if(new_item.first < parent->getKey()){
-				parent->setLeft(newChild);
-			}
+        // Move up one level in the tree
+        node = node->getParent();
+    }
+}
 
-			else{
-				parent->setRight(newChild);
-			}
-
-			if(parent->getBalance() == -1 || parent->getBalance() == 1){
-				parent->setBalance(0);
-				return;
-			}
-
-			else{
-				if(newChild == parent->getLeft()){
-					parent->updateBalance(-1);
-				}
-
-				else{
-					parent->updateBalance(1);
-				}
-
-				insertFix(parent, newChild);
-			}
-		}
+template<class Key, class Value>
+int8_t AVLTree<Key, Value>::getHeight(AVLNode<Key, Value>* node) const
+{
+    if (node == nullptr) {
+        return 0;
+    }
+    // Height of the node is 1 + maximum height of its children
+    return 1 + std::max(getHeight(node->getLeft()), getHeight(node->getRight()));
 }
 
 /*
