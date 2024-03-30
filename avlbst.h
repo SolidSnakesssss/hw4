@@ -251,16 +251,30 @@ void AVLTree<Key, Value>::remove(const Key& key) {
 
     // If node not found, return
     if (n == nullptr) {
+				std::cout << "Burger" << std::endl;
         return;
     }
 
     AVLNode<Key, Value>* p = n->getParent(); // Parent node of n
     int8_t diff = 0; // Balance factor change
 
+		std::cout << "Fries" << std::endl;
+
     // Finds successor if  n has two children
     if (n->getLeft() != nullptr && n->getRight() != nullptr) {
-        AVLNode<Key, Value>* succ = static_cast<AVLNode<Key, Value>*>(BinarySearchTree<Key, Value>::successor(n));
-        nodeSwap(succ, n); //swaps n with successor
+				std::cout << "McDonald" << std::endl;
+        AVLNode<Key, Value>* pred = static_cast<AVLNode<Key, Value>*>(BinarySearchTree<Key, Value>::predecessor(n));
+				
+				nodeSwap(pred, n); //swaps n with successor
+
+				if(pred == this->root_){
+					if(pred->getLeft()->getKey() > pred->getKey()){
+						nodeSwap(pred->getRight(), pred->getLeft());
+						n = nullptr;
+						
+						return;
+					}
+				}
     }
 
     // Determine diff and adjust pointers if parent exists
@@ -269,10 +283,14 @@ void AVLTree<Key, Value>::remove(const Key& key) {
             diff = 1;
             if (n->getLeft() != nullptr) {
                 p->setLeft(n->getLeft());
-            } else {
+            } 
+						
+						else {
                 p->setLeft(n->getRight());
             }
-        } else { // n is right child
+        } 
+				
+				else { // n is right child
             diff = -1;
             if (n->getLeft() != nullptr) {
                 p->setRight(n->getLeft());
@@ -280,12 +298,14 @@ void AVLTree<Key, Value>::remove(const Key& key) {
                 p->setRight(n->getRight());
             }
         }
-        if (n->getLeft() != nullptr || n->getRight() != nullptr) { // Update child's parent pointer
+        
+				if (n->getLeft() != nullptr || n->getRight() != nullptr) { // Update child's parent pointer
             n->getLeft()->setParent(p);
             n->getRight()->setParent(p);
         }
         delete n; // Delete node n
-    } else { // If n is the root
+    } 
+		else { // If n is the root
         if(n->getLeft() != nullptr && n->getRight() != nullptr){
 					if(n->getKey() == key)
 					{
