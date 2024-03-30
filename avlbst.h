@@ -237,20 +237,28 @@ void AVLTree<Key, Value>::remove(const Key& key) {
     AVLNode<Key, Value>* p = n->getParent(); // Parent node of n
     int8_t diff = 0; // Balance factor change
 
-    // Handle case where n has only one child
+    // Finds successor if  n has two children
     if (n->getLeft() != nullptr && n->getRight() != nullptr) {
         AVLNode<Key, Value>* succ = static_cast<AVLNode<Key, Value>*>(BinarySearchTree<Key, Value>::successor(n));
-        nodeSwap(succ, n);
+        nodeSwap(succ, n); //swaps n with successor
     }
 
     // Determine diff and adjust pointers if parent exists
     if (p != nullptr) {
         if (n == p->getLeft()) { // n is left child
             diff = 1;
-            p->setLeft((n->getLeft() != nullptr) ? n->getLeft() : n->getRight());
+            if (n->getLeft() != nullptr) {
+                p->setLeft(n->getLeft());
+            } else {
+                p->setLeft(n->getRight());
+            }
         } else { // n is right child
             diff = -1;
-            p->setRight((n->getLeft() != nullptr) ? n->getLeft() : n->getRight());
+            if (n->getLeft() != nullptr) {
+                p->setRight(n->getLeft());
+            } else {
+                p->setRight(n->getRight());
+            }
         }
         if (n->getLeft() != nullptr || n->getRight() != nullptr) { // Update child's parent pointer
             n->getLeft()->setParent(p);
@@ -258,14 +266,23 @@ void AVLTree<Key, Value>::remove(const Key& key) {
         }
         delete n; // Delete node n
     } else { // If n is the root
-        if (n->getLeft() != nullptr || n->getRight() != nullptr) { // Update child's parent pointer
+        if(n->getLeft() != nullptr && n->getRight() != nullptr){
+					if(n->getKey() == key)
+					{
+						std::cout << "Ligma" << std::endl;
+					}
+				}
+				
+				else if (n->getLeft() != nullptr || n->getRight() != nullptr) { // Update child's parent pointer
             if (n->getLeft() != nullptr) {
                 this->root_ = n->getLeft();
             } else {
                 this->root_ = n->getRight();
             }
             this->root_->setParent(nullptr);
-        } else { // If n has no children
+        } 
+				
+				else { // If n has no children
             this->root_ = nullptr;
         }
         delete n; // Delete node n
@@ -496,6 +513,8 @@ void AVLTree<Key, Value>::removeFix(AVLNode<Key, Value>* n, int8_t diff) {
     if (n == nullptr) {
         return;
     }
+
+		//std::cout << n->getKey() << std::endl;
  
     AVLNode<Key, Value>* p = n->getParent();
     int8_t ndiff = 0;
